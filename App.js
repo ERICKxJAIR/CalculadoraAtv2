@@ -1,131 +1,162 @@
-import React from 'react';
-import { useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default function App() {
-  // Mapeamento de teclas
-  const buttons = ['LIMPAR', 'DEL', '%', '/', 7, 8, 9, "x", 6, 5, 4, '-', 3, 2, 1, '+', 0, '.', '+/-', '=']
+  const buttons = [
+    ['LIMPAR', 'DEL', '%', '/'],
+    [7, 8, 9, '*'],
+    [4, 5, 6, '-'],
+    [1, 2, 3, '+'],
+    [0, '.', '+/-', '='],
+  ];
 
-  const [currentNumber, setCurrentNumber] = useState("")
-  const [lastNumber, setLastNumber] = useState("")
-
+  const [currentNumber, setCurrentNumber] = useState('');
+  const [lastNumber, setLastNumber] = useState(''); // Adicione esta linha
 
   function calculator() {
-    const splitNumbers = currentNumber.split(' ')
-    const fistNumber = parseFloat(splitNumbers[0])
-    const lastNumber = parseFloat(splitNumbers[2])
-    const operator = splitNumbers[1]
+    const splitNumbers = currentNumber.split(' ');
+    const firstNumber = parseFloat(splitNumbers[0]);
+    const operator = splitNumbers[1];
+    const secondNumber = parseFloat(splitNumbers[2]);
+    let result = 0;
 
-    // Faz ação referente tecla pressionada
-    switch (operator) {
-      case '+':
-        setCurrentNumber((fistNumber + lastNumber).toString())
-        return
-      case '-':
-        setCurrentNumber((fistNumber - lastNumber).toString())
-        return
-      case 'x':
-        setCurrentNumber((fistNumber + lastNumber).toString())
-        return
-      case '/':
-        setCurrentNumber((fistNumber - lastNumber).toString())
-        return
+    if (operator === '+') {
+      result = firstNumber + secondNumber;
+    } else if (operator === '-') {
+      result = firstNumber - secondNumber;
+    } else if (operator === '*') {
+      result = firstNumber * secondNumber;
+    } else if (operator === '/') {
+      result = firstNumber / secondNumber;
+    } else if (operator === '%') {
+      result = (firstNumber / 100) * secondNumber;
     }
+
+    setCurrentNumber(result.toString());
   }
 
   function handleInput(buttonPressed) {
-    console.log(buttonPressed) // Mostra no Console a tecla pressionada
-    if (buttonPressed === '+' | buttonPressed === "-" | buttonPressed === "x" | buttonPressed === "/") {
-      setCurrentNumber(currentNumber + " " + buttonPressed + " ")
-      return
+    if (
+      typeof buttonPressed === 'number' ||
+      buttonPressed === '.' ||
+      buttonPressed === '0'
+    ) {
+      setCurrentNumber(currentNumber + buttonPressed.toString());
+    } else if (buttonPressed === 'DEL') {
+      setCurrentNumber(currentNumber.slice(0, -1));
+    } else if (buttonPressed === 'LIMPAR') {
+      setCurrentNumber('');
+      setLastNumber('');
+    } else if (buttonPressed === '+/-') {
+      setCurrentNumber((-parseFloat(currentNumber)).toString());
+    } else if (buttonPressed === '%') {
+      setCurrentNumber(currentNumber + ' % ');
+    } else if (buttonPressed === '=') {
+      setLastNumber(currentNumber + ' = ');
+      calculator();
+    } else {
+      setCurrentNumber(currentNumber + ' ' + buttonPressed + ' ');
     }
-    switch (buttonPressed) {
-      case 'DEL':
-        setCurrentNumber(currentNumber.substring(0, (currentNumber.length - 2)))
-        return
-      case 'LIMPAR': // Limpa todo o conteúdo
-        setLastNumber("")
-        setCurrentNumber("")
-        return
-      case '=':
-        setLastNumber(currentNumber + " = ")
-        calculator()
-        return
-      case '+/-':
-        return
-    }
-
-    setCurrentNumber(currentNumber + buttonPressed)
   }
-
 
   return (
     <View style={styles.container}>
-
-      {/* Area onde o resultado é exibido */}
       <View style={styles.results}>
         <Text style={styles.historyText}>{lastNumber}</Text>
         <Text style={styles.resultText}>{currentNumber}</Text>
-        <View>
-
-          {/* Area onde os botões são exibidos*/}
-          <View style={styles.buttons}>
-
-            {buttons.map((button) =>
-              button === '=' ? // Mapeamento do botão =
-                <TouchableOpacity onPress={() => handleInput(button)} key={button} style={[styles.button, { backgroundColor: '#3dd0e3' }]}>
-                  <Text style={[styles.textButton, { color: "white", fontSize: 30 }]}>{button}</Text>
-                </TouchableOpacity>
-                : // Mapeamento dos outros botões
-                <TouchableOpacity onPress={() => handleInput(button)} key={button} style={styles.button}>
-                  <Text style={[styles.textButton, { color: typeof (button) === 'number' ? 'black' : '#0093a6' }]}>{button}</Text>
-                </TouchableOpacity>
-            )}
+      </View>
+      <View style={styles.buttons}>
+        {buttons.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.buttonRow}>
+            {row.map((button, columnIndex) => (
+              <TouchableOpacity
+                onPress={() => handleInput(button)}
+                key={columnIndex.toString()}
+                style={[
+                  styles.button,
+                  {
+                    backgroundColor:
+                      button === '=' ||
+                        typeof button === 'number' ||
+                        button === 'LIMPAR' ||
+                        button === '.' ||
+                        button === '+/-'
+                        ? '#6e2aad'
+                        : '#6e2aad',
+                  },
+                  button === '=' ? styles.equalButton : null,
+                ]}>
+                <Text
+                  style={[
+                    styles.textButton,
+                    {
+                      color:
+                        button === 'DEL' ||
+                          button === 'LIMPAR' ||
+                          button === '%' ||
+                          button === '/' ||
+                          button === '*' ||
+                          button === '-' ||
+                          button === '+'
+                          ? 'silver'
+                          : 'white',
+                      fontSize: 30,
+                    },
+                  ]}>
+                  {button}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </View>
+        ))}
       </View>
     </View>
   );
 }
 
-
-      const styles = StyleSheet.create({
-        container: {
-        flex: 1,
-        backgroundColor: '#6e2aad'
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#6e2aad',
   },
-      results: {
-        flex: 2,
-      justifyContent: "center",
-      backgroundColor: "#f5f5f5"
+  results: {
+    flex: 2,
+    justifyContent: 'flex-end',
+    backgroundColor: '#311847',
+    paddingRight: 10,
   },
-      resultText: {
-        color: "#282F38",
-      fontSize: 32,
-      fontWeight: "bold",
-      padding: 12,
-      textAlign: "right"
+  resultText: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: 'bold',
+    padding: 12,
+    textAlign: 'right',
   },
-      historyText:{
-        color: "#7c7c7c",
-      fontSize: 20,
-      marginRight: 10,
-      alignSelf: 'flex-end',
+  historyText: {
+    color: 'silver',
+    fontSize: 20,
+    marginRight: 10,
+    alignSelf: 'flex-end',
   },
-      buttons: {
-        flexDirection: 'row',
-      flexWrap: 'wrap',
+  buttons: {
+    flex: 5,
+    flexDirection: 'column',
   },
-      button: {
-        backgroundColor: 'white',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minWidth: 90,
-      minHeight: 90,
-      flex: 2,
+  buttonRow: {
+    flex: 1,
+    flexDirection: 'row',
   },
-      textButton: {
-        color: "#7c7c7c",
-      fontSize: 20,
-  }, 
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: '#6e2aad',
+  },
+  textButton: {
+    fontSize: 30,
+  },
+  equalButton: {
+    backgroundColor: '#311847',
+  },
 });
